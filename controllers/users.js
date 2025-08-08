@@ -12,9 +12,7 @@ const User = require("../models/user");
 
 const getUsers = (req, res) => {
   User.find({})
-    .then((users) => {
-      res.status(OK_REQUEST).send(users);
-    })
+    .then((users) => res.status(OK_REQUEST).send(users))
     .catch((err) => {
       console.error(err);
       return res.status(INTERNAL_SERVER_ERROR).send({
@@ -31,6 +29,7 @@ const createUser = (req, res) => {
   // Validate required fields
   // Note: This validation is done again in the catch block to ensure it catches errors correctly
   if (!name || !avatar) {
+    // possible need to get rid of brackets and return a string
     return res.status(BAD_REQUEST).send({
       message: "Name and avatar are required fields",
     });

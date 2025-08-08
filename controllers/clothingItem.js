@@ -1,6 +1,7 @@
 const ClothingItem = require("../models/clothingItems");
 const {
   OK_REQUEST,
+  CREATED_REQUEST,
   BAD_REQUEST,
   NOT_FOUND,
   INTERNAL_SERVER_ERROR,
@@ -22,10 +23,7 @@ const createItem = (req, res) => {
   }
 
   ClothingItem.create({ name, weather, imageUrl })
-    .then((item) => {
-      console.log(item);
-      res.status(201).send(item);
-    })
+    .then((item) => res.status(CREATED_REQUEST).send(item))
     .catch((e) => {
       console.error("Error creating item:", e.message);
       res.status(BAD_REQUEST).send({
@@ -70,7 +68,7 @@ const updateItem = (req, res) => {
 const likeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
-    { $addToSet: { likes: req.user?._id || req.body.userId } }, // fallback for testing
+    { $addToSet: { likes: req.user || req.body.userId } }, // fallback for testing
     { new: true }
   )
     .then((item) => {
@@ -122,17 +120,19 @@ const deleteItem = (req, res) => {
     });
 };
 
+// Dislike an item: PUT request
+
 const dislikeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
-    { $pull: { likes: req.user._id } }, // remove _id from likes array
+    { $pull: { likes: req.user } }, // remove _id from likes array
     { new: true }
   )
     .then((item) => {
       if (!item) {
         return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
-      res.status(OK_REQUEST).send({ data: item });
+      return res.status(OK_REQUEST).send({ data: item });
     })
     .catch((e) => {
       res.status(BAD_REQUEST).send({ message: "Error disliking item", e });
@@ -144,6 +144,6 @@ module.exports = {
   getItems,
   updateItem,
   deleteItem,
-  likeItem, // <-- add this
-  dislikeItem, // <-- and this
+  likeItem,
+  dislikeItem,
 };
