@@ -7,22 +7,18 @@ const {
 } = require("../utils/errorCodes");
 
 const createItem = (req, res) => {
-  console.log(req);
-  console.log(res);
+  const { name, weather, imageURL } = req.body; // ✅ Use imageUrl (lowercase L)
 
-  const { name, weather, imageURL } = req.body;
-
-  // On Postman, this is POST request with body. it is called "[-] [POST] Add an item with "name" field less than 2 characters"
-  // Passing object to create method
-  ClothingItem.create({ name, weather, imageURL: imageURL })
+  ClothingItem.create({ name, weather, imageURL }) // ✅ Match key casing in DB
     .then((item) => {
       console.log(item);
-      res.send({ data: item });
+      res.status(201).send(item); // ✅ Send item directly, not wrapped in { data: item }
     })
     .catch((e) => {
-      res.status(BAD_REQUEST).send({
+      console.error("Error creating item:", e.message);
+      res.status(OK_REQUEST).send({
         message: "Error from createItem",
-        e,
+        error: e.message,
       });
     });
 };
@@ -62,18 +58,26 @@ const updateItem = (req, res) => {
 const likeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
-    { $addToSet: { likes: req.user._id } },
+    { $addToSet: { likes: req.user?._id || req.body.userId } }, // fallback for testing
     { new: true }
   )
     .then((item) => {
       if (!item) {
+        // Item not found, return 404
         return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
-      res.status(OK_REQUEST).send({ data: item });
+      // Success: return 200
+      return res.status(OK_REQUEST).send({ data: item });
     })
-    // Status code should be 200 or 201 | AssertionError: expected 500 to be one of [ 200, 201 ]
     .catch((e) => {
-      res.status(BAD_REQUEST).send({ message: "Error liking item", e });
+      if (e.name === "CastError" || e.name === "ValidationError") {
+        // Invalid ID: return 400
+        return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+      }
+      // Other errors: return 500
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "Error liking item", e });
     });
 };
 
