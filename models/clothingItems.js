@@ -40,6 +40,7 @@ const clothingItem = new mongoose.Schema({
   },
 });
 
+// Set default for likes array
 clothingItem.path("likes").default([]);
 
 module.exports = mongoose.model("clothingItems", clothingItem);
