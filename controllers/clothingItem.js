@@ -67,13 +67,13 @@ const likeItem = (req, res) => {
   )
     .then((item) => {
       if (!item) {
-        return res.status(BAD_REQUEST).send({ message: "Item not found" });
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
       res.status(OK_REQUEST).send({ data: item });
     })
     // Status code should be 200 or 201 | AssertionError: expected 500 to be one of [ 200, 201 ]
     .catch((e) => {
-      res.status(OK_REQUEST).send({ message: "Error liking item", e });
+      res.status(BAD_REQUEST).send({ message: "Error liking item", e });
     });
 };
 
