@@ -10,6 +10,7 @@ const {
 } = require("../controllers/clothingItem");
 
 // CRUD routes for clothing items
+// CRUD = Create, Read, Update, Delete
 
 // CREATE
 router.post("/", createItem);

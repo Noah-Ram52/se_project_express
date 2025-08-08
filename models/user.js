@@ -8,10 +8,6 @@ const userSchema = new mongoose.Schema({
     minlength: 2,
     maxlength: 30,
   },
-  // weather: {
-  //   type: String,
-  //   required: true,
-  // },
   avatar: {
     type: String,
     required: [true, "Avatar Field is required"],

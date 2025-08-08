@@ -7,7 +7,11 @@ const {
 } = require("../utils/errorCodes");
 
 const createItem = (req, res) => {
-  const { name, weather, imageUrl } = req.body; // ✅ Use imageUrl (lowercase L)
+  // Destructure the required fields from the request body
+  // This assumes the request body contains these fields
+  // and that they are required for creating a clothing item
+  // If any of these fields are missing, the request will return a 400 Bad Request
+  const { name, weather, imageUrl } = req.body;
 
   // Validate required fields
   // Note: This validation is done again in the catch block to ensure it catches errors correctly
@@ -17,10 +21,10 @@ const createItem = (req, res) => {
     });
   }
 
-  ClothingItem.create({ name, weather, imageUrl }) // ✅ Match key casing in DB
+  ClothingItem.create({ name, weather, imageUrl })
     .then((item) => {
       console.log(item);
-      res.status(201).send(item); // ✅ Send item directly, not wrapped in { data: item }
+      res.status(201).send(item);
     })
     .catch((e) => {
       console.error("Error creating item:", e.message);

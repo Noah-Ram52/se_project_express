@@ -1,3 +1,9 @@
+// Create a file named errorCodes.js in the utils directory
+// This file will contain the error codes used in the application
+// The error codes are exported as constants for use in controllers and routes
+// This helps maintain consistency and makes it easier to manage error responses
+// The error codes are based on standard HTTP status codes
+
 const OK_REQUEST = 200;
 const CREATED_REQUEST = 201;
 const NO_CONTENT_REQUEST = 204;
