@@ -7,16 +7,24 @@ const {
 } = require("../utils/errorCodes");
 
 const createItem = (req, res) => {
-  const { name, weather, imageURL } = req.body; // ✅ Use imageUrl (lowercase L)
+  const { name, weather, imageUrl } = req.body; // ✅ Use imageUrl (lowercase L)
 
-  ClothingItem.create({ name, weather, imageURL }) // ✅ Match key casing in DB
+  // Validate required fields
+  // Note: This validation is done again in the catch block to ensure it catches errors correctly
+  if (!name || !weather || !imageUrl) {
+    return res.status(BAD_REQUEST).send({
+      message: "Name, weather, and imageUrl are required fields",
+    });
+  }
+
+  ClothingItem.create({ name, weather, imageUrl }) // ✅ Match key casing in DB
     .then((item) => {
       console.log(item);
       res.status(201).send(item); // ✅ Send item directly, not wrapped in { data: item }
     })
     .catch((e) => {
       console.error("Error creating item:", e.message);
-      res.status(OK_REQUEST).send({
+      res.status(BAD_REQUEST).send({
         message: "Error from createItem",
         error: e.message,
       });
@@ -40,9 +48,9 @@ const getItems = (req, res) => {
 
 const updateItem = (req, res) => {
   const { itemId } = req.params;
-  const { imageURL } = req.body;
+  const { imageUrl } = req.body;
 
-  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageURL } })
+  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } })
     .orFail()
     .then((item) => res.status(OK_REQUEST).send({ data: item }))
     .catch((e) => {
@@ -86,19 +94,27 @@ const likeItem = (req, res) => {
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
-  console.log("Deleting item with ID:", itemId);
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
     .then((item) => {
-      res
-        .status(NO_CONTENT_REQUEST)
-        .send({ data: item })
-        .catch((e) => {
-          res.status(INTERNAL_SERVER_ERROR).send({
-            message: "Error from updateItems",
-            e,
-          });
+      // Return 200 with the deleted item data as expected by the test
+      res.status(OK_REQUEST).send({ data: item });
+    })
+    .catch((e) => {
+      if (e.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({
+          message: "Item not found",
         });
+      }
+      if (e.name === "CastError") {
+        return res.status(BAD_REQUEST).send({
+          message: "Invalid item ID",
+        });
+      }
+      return res.status(INTERNAL_SERVER_ERROR).send({
+        message: "Error from deleteItem",
+        e,
+      });
     });
 };
 

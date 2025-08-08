@@ -18,7 +18,7 @@ const getUsers = (req, res) => {
     .catch((err) => {
       console.error(err);
       return res.status(INTERNAL_SERVER_ERROR).send({
-        message: err.message,
+        message: "An error has occurred on the server",
       });
     });
 };
@@ -28,16 +28,24 @@ const getUsers = (req, res) => {
 const createUser = (req, res) => {
   const { name, avatar } = req.body;
 
+  // Validate required fields
+  // Note: This validation is done again in the catch block to ensure it catches errors correctly
+  if (!name || !avatar) {
+    return res.status(BAD_REQUEST).send({
+      message: "Name and avatar are required fields",
+    });
+  }
+
   User.create({ name, avatar })
     .then((user) => res.status(CREATED_REQUEST).send(user))
     .catch((err) => {
       console.error(err);
-      if (err.name === "ValidationError") {
+      if (!name || !avatar) {
         return res.status(BAD_REQUEST).send({
-          message: err.message,
+          message: "Name and avatar are required fields",
         });
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({
+      return res.status(BAD_REQUEST).send({
         message: err.message,
       });
     });
@@ -57,7 +65,8 @@ const getUser = (req, res) => {
           message: err.message,
         });
         // handle the case where the user is not found
-      } else if (err.name === "CastError") {
+      }
+      if (err.name === "CastError") {
         // handle other errors
         return res.status(BAD_REQUEST).send({
           message: "User not found",
