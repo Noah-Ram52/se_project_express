@@ -23,7 +23,7 @@ const createItem = (req, res) => {
     });
   }
 
-  // return ClothingItem.create fix (error  Expected to return a value at the end
+  // return ClothingItem.create fixed (error  Expected to return a value at the end
   // Of arrow function  consistent-return)
 
   return ClothingItem.create({ name, weather, imageUrl })

@@ -35,7 +35,7 @@ const createUser = (req, res) => {
     });
   }
 
-  // return User.create fix (error  Expected to return a value at the end
+  // return User.create fixed (error  Expected to return a value at the end
   // Of arrow function  consistent-return)
 
   return User.create({ name, avatar })
