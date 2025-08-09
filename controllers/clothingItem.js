@@ -12,6 +12,7 @@ const createItem = (req, res) => {
   // This assumes the request body contains these fields
   // and that they are required for creating a clothing item
   // If any of these fields are missing, the request will return a 400 Bad Request
+
   const { name, weather, imageUrl } = req.body;
 
   // Validate required fields
@@ -22,11 +23,14 @@ const createItem = (req, res) => {
     });
   }
 
-  ClothingItem.create({ name, weather, imageUrl })
+  // return ClothingItem.create fix (error  Expected to return a value at the end
+  // Of arrow function  consistent-return)
+
+  return ClothingItem.create({ name, weather, imageUrl })
     .then((item) => res.status(CREATED_REQUEST).send(item))
     .catch((e) => {
       console.error("Error creating item:", e.message);
-      res.status(BAD_REQUEST).send({
+      return res.status(BAD_REQUEST).send({
         message: "Error from createItem",
         error: e.message,
       });
