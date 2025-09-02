@@ -52,7 +52,18 @@ const userAuth = (req, res) => {
       .send({ message: "Email and password required" });
   }
   // Replace this with real authentication logic!
-  return res.status(200).send({ token: "dummy-jwt-token" });
+  // return res.status(200).send({ token: "dummy-jwt-token" });
+
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+      return res.status(200).send({ token });
+    })
+    .catch(() => {
+      return res.status(401).send({ message: "Incorrect email or password" });
+    });
 };
 
 // GET /users/:userId
