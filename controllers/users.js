@@ -7,6 +7,8 @@ const {
 } = require("../utils/errorCodes");
 
 const User = require("../models/user");
+const { JWT_SECRET } = require("../utils/secretCode");
+const jwt = require("jsonwebtoken");
 
 // GET /users
 
@@ -24,35 +26,70 @@ const getUsers = (req, res) => {
 // POST /users
 
 const createUser = (req, res) => {
-  const { name, avatar } = req.body;
+  const { name, avatar, email, password } = req.body;
 
-  // Validate required fields
-  // Note: This validation is done again in the catch block to ensure it catches errors correctly
-  if (!name || !avatar) {
-    // possible need to get rid of brackets and return a string
-    return res.status(BAD_REQUEST).send({
-      message: "Name and avatar are required fields",
-    });
+  if (!name || !avatar || !email || !password) {
+    return res.status(BAD_REQUEST).send({ message: "All fields are required" });
   }
 
-  // return User.create fixed (error  Expected to return a value at the end
-  // Of arrow function  consistent-return)
-
-  return User.create({ name, avatar })
-    .then((user) => res.status(CREATED_REQUEST).send(user))
+  User.create({ name, avatar, email, password })
+    .then((user) => User.findById(user._id).select("+password"))
+    .then((user) => {
+      const userObj = user.toObject();
+      delete userObj.password;
+      return res.status(CREATED_REQUEST).send(userObj);
+    })
     .catch((err) => {
-      console.error(err);
-      if (!name || !avatar) {
-        return res.status(BAD_REQUEST).send({
-          message: "Name and avatar are required fields",
-        });
-      }
-      return res.status(BAD_REQUEST).send({
-        message: err.message,
-      });
+      return res.status(BAD_REQUEST).send({ message: err.message });
     });
 };
 
+const userAuth = (req, res) => {
+  // You will need to implement JWT logic here
+  // For now, just send a dummy token for testing
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res
+      .status(BAD_REQUEST)
+      .send({ message: "Email and password required" });
+  }
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+      return res.status(200).send({ token });
+    })
+    .catch(() => {
+      return res.status(401).send({ message: "Incorrect email or password" });
+    });
+  // Replace this with real authentication logic!
+
+  // User.findOne({ email })
+  //   .select("+password")
+  //   .then((user) => {
+  //     if (!user) {
+  //       return res.status(BAD_REQUEST).send({ message: "Invalid credentials" });
+  //     }
+  //     return bcrypt.compare(password, user.password).then((matched) => {
+  //       if (!matched) {
+  //         return res
+  //           .status(BAD_REQUEST)
+  //           .send({ message: "Invalid credentials" });
+  //       }
+  //       // Generate JWT
+  //       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+  //         expiresIn: "7d",
+  //       });
+  //       return res.status(200).send({ token });
+  //     });
+  //   })
+  //   .catch((err) => {
+  //     return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+  //   });
+};
+
+// GET /users/:userId
 const getUser = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
@@ -78,4 +115,4 @@ const getUser = (req, res) => {
     });
 };
 
-module.exports = { getUsers, createUser, getUser };
+module.exports = { getUsers, createUser, getUser, userAuth };
