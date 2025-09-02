@@ -45,48 +45,14 @@ const createUser = (req, res) => {
 };
 
 const userAuth = (req, res) => {
-  // You will need to implement JWT logic here
-  // For now, just send a dummy token for testing
   const { email, password } = req.body;
   if (!email || !password) {
     return res
       .status(BAD_REQUEST)
       .send({ message: "Email and password required" });
   }
-  User.findUserByCredentials(email, password)
-    .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-        expiresIn: "7d",
-      });
-      return res.status(200).send({ token });
-    })
-    .catch(() => {
-      return res.status(401).send({ message: "Incorrect email or password" });
-    });
   // Replace this with real authentication logic!
-
-  // User.findOne({ email })
-  //   .select("+password")
-  //   .then((user) => {
-  //     if (!user) {
-  //       return res.status(BAD_REQUEST).send({ message: "Invalid credentials" });
-  //     }
-  //     return bcrypt.compare(password, user.password).then((matched) => {
-  //       if (!matched) {
-  //         return res
-  //           .status(BAD_REQUEST)
-  //           .send({ message: "Invalid credentials" });
-  //       }
-  //       // Generate JWT
-  //       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-  //         expiresIn: "7d",
-  //       });
-  //       return res.status(200).send({ token });
-  //     });
-  //   })
-  //   .catch((err) => {
-  //     return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
-  //   });
+  return res.status(200).send({ token: "dummy-jwt-token" });
 };
 
 // GET /users/:userId
