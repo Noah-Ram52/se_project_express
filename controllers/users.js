@@ -23,7 +23,7 @@ const getUsers = (req, res) => {
     });
 };
 
-// POST /users
+// POST /users or /signup
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
@@ -51,8 +51,6 @@ const userAuth = (req, res) => {
       .status(BAD_REQUEST)
       .send({ message: "Email and password required" });
   }
-  // Replace this with real authentication logic!
-  // return res.status(200).send({ token: "dummy-jwt-token" });
 
   User.findUserByCredentials(email, password)
     .then((user) => {
