@@ -1,3 +1,4 @@
+const jwt = require("jsonwebtoken");
 const {
   OK_REQUEST,
   CREATED_REQUEST,
@@ -10,7 +11,6 @@ const {
 
 const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/secretCode");
-const jwt = require("jsonwebtoken");
 
 // GET /users
 
@@ -34,7 +34,7 @@ const createUser = (req, res) => {
     return res.status(BAD_REQUEST).send({ message: "All fields are required" });
   }
 
-  User.create({ name, avatar, email, password })
+  return User.create({ name, avatar, email, password })
     .then((user) => User.findById(user._id).select("+password"))
     .then((user) => {
       const userObj = user.toObject();
@@ -51,7 +51,9 @@ const createUser = (req, res) => {
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST).send({ message: err.message });
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -66,18 +68,18 @@ const userAuth = (req, res) => {
       .send({ message: "Email and password required" });
   }
 
-  User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
       return res.status(200).send({ token });
     })
-    .catch(() => {
-      return res
+    .catch(() =>
+      res
         .status(UNAUTHORIZED_ERROR_CODE)
-        .send({ message: "Incorrect email or password" });
-    });
+        .send({ message: "Incorrect email or password" })
+    );
 };
 
 // GET /users/:userId
@@ -101,7 +103,7 @@ const getUser = (req, res) => {
         });
       }
       return res.status(INTERNAL_SERVER_ERROR).send({
-        message: err.message,
+        message: "An error has occurred on the server",
       });
     });
 };
@@ -116,7 +118,9 @@ const getCurrentUser = (req, res) => {
       if (err.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND).send({ message: "User not found" });
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -139,7 +143,9 @@ const updateUserProfile = (req, res) => {
       if (err.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND).send({ message: "User not found" });
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 

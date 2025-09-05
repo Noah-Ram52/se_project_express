@@ -22,5 +22,8 @@ module.exports = {
     sourceType: "module",
   },
   // This rule is set to error for all console methods except for console.error
-  rules: { "no-console": ["error", { allow: ["error"] }] },
+  rules: {
+    "no-console": ["error", { allow: ["error"] }],
+    "no-underscore-dangle": ["error", { allow: ["_id", "__v"] }],
+  },
 };

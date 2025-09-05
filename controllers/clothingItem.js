@@ -28,12 +28,20 @@ const createItem = (req, res) => {
 
   return ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => res.status(CREATED_REQUEST).send(item))
-    .catch((e) => {
-      console.error("Error creating item:", e.message);
-      return res.status(BAD_REQUEST).send({
-        message: "Error from createItem",
-        error: e.message,
-      });
+    .catch((err) => {
+      console.error("Error creating item:", err);
+
+      if (err.name === "ValidationError") {
+        // ✅ Known/expected error (client’s fault)
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Invalid data provided for clothing item" });
+      }
+
+      // ✅ Default / unexpected error (server’s fault)
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -42,11 +50,12 @@ const createItem = (req, res) => {
 const getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.status(OK_REQUEST).send({ items }))
-    .catch((e) => {
-      res.status(INTERNAL_SERVER_ERROR).send({
-        message: "Error from getItems",
-        e,
-      });
+    .catch((err) => {
+      console.error("Error fetching items:", err);
+
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -59,11 +68,22 @@ const updateItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } })
     .orFail()
     .then((item) => res.status(OK_REQUEST).send({ data: item }))
-    .catch((e) => {
-      res.status(INTERNAL_SERVER_ERROR).send({
-        message: "Error from updateItems",
-        e,
-      });
+    .catch((err) => {
+      console.error("Error updating item:", err);
+
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
+      }
+
+      if (err.name === "ValidationError" || err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Invalid data provided" });
+      }
+
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -82,13 +102,15 @@ const likeItem = (req, res) => {
       }
       return res.status(OK_REQUEST).send(item);
     })
-    .catch((e) => {
-      if (e.name === "CastError" || e.name === "ValidationError") {
+    .catch((err) => {
+      console.error("Error liking item:", err);
+
+      if (err.name === "CastError" || err.name === "ValidationError") {
         return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
       }
       return res
         .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Error liking item", e });
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -103,20 +125,21 @@ const deleteItem = (req, res) => {
       // Return 200 with the deleted item data as expected by the test
       res.status(OK_REQUEST).send({ data: item });
     })
-    .catch((e) => {
-      if (e.name === "DocumentNotFoundError") {
+    .catch((err) => {
+      console.error("Error deleting item:", err);
+
+      if (err.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND).send({
           message: "Item not found",
         });
       }
-      if (e.name === "CastError") {
+      if (err.name === "CastError") {
         return res.status(BAD_REQUEST).send({
           message: "Invalid item ID",
         });
       }
       return res.status(INTERNAL_SERVER_ERROR).send({
-        message: "Error from deleteItem",
-        e,
+        message: "An error has occurred on the server",
       });
     });
 };
@@ -135,8 +158,16 @@ const dislikeItem = (req, res) => {
       }
       return res.status(OK_REQUEST).send({ data: item });
     })
-    .catch((e) => {
-      res.status(BAD_REQUEST).send({ message: "Error disliking item", e });
+    .catch((err) => {
+      console.error("Error disliking item:", err);
+
+      if (err.name === "CastError" || err.name === "ValidationError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+      }
+
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 

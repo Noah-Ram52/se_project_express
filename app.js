@@ -8,17 +8,18 @@ const mainRouter = require("./routes/index");
 
 mongoose
   .connect("mongodb://localhost:27017/wtwr_db")
-  .then(() => {})
+  .then(() => {
+    // eslint-disable-next-line no-console
+    console.log("Connected to MongoDB");
+  })
   .catch((e) => console.error("DB error", e));
 
 app.use(cors());
 app.use(express.json());
 
-// app.use((req, res, next) => {
-//   req.user = {
-//     _id: "5d8b8592978f8bd833ca8133",
-//   };
-//   next();
-// });
-
 app.use("/", mainRouter);
+
+app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
+  console.log(`Server listening on ${PORT}`);
+});
