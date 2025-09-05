@@ -4,6 +4,7 @@ const {
   createUser,
   getUser,
   getCurrentUser,
+  updateUserProfile,
 } = require("../controllers/users");
 const auth = require("../middlewares/auth");
 
@@ -19,6 +20,7 @@ router.post("/", createUser);
 router.get("/me", auth, getCurrentUser);
 router.get("/", auth, getUsers);
 router.get("/:userId", auth, getUser);
+router.patch("/me", auth, updateUserProfile);
 
 // router.get("/", getUsers);
 // router.get("/:userId", getUser);

@@ -120,4 +120,34 @@ const getCurrentUser = (req, res) => {
     });
 };
 
-module.exports = { getUsers, createUser, getUser, userAuth, getCurrentUser };
+// PATCH /users/me
+
+const updateUserProfile = (req, res) => {
+  const { name, avatar } = req.body;
+
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, avatar },
+    { new: true, runValidators: true }
+  )
+    .orFail()
+    .then((user) => res.status(OK_REQUEST).send(user))
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        return res.status(BAD_REQUEST).send({ message: err.message });
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: "User not found" });
+      }
+      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+    });
+};
+
+module.exports = {
+  getUsers,
+  createUser,
+  getUser,
+  userAuth,
+  getCurrentUser,
+  updateUserProfile,
+};
