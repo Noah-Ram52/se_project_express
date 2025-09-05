@@ -26,7 +26,7 @@ const createItem = (req, res) => {
   // return ClothingItem.create fixed (error  Expected to return a value at the end
   // Of arrow function  consistent-return)
 
-  return ClothingItem.create({ name, weather, imageUrl })
+  return ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => res.status(CREATED_REQUEST).send(item))
     .catch((e) => {
       console.error("Error creating item:", e.message);
@@ -71,24 +71,21 @@ const updateItem = (req, res) => {
 
 const likeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
-    req.params.itemId,
-    { $addToSet: { likes: req.user || req.body.userId } }, // fallback for testing
+    // When id = "text" → Mongoose throws a CastError → now caught properly → returns 400.
+    req.params.id,
+    { $addToSet: { likes: req.user._id } },
     { new: true }
   )
     .then((item) => {
       if (!item) {
-        // Item not found, return 404
         return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
-      // Success: return 200
-      return res.status(OK_REQUEST).send({ data: item });
+      return res.status(OK_REQUEST).send(item);
     })
     .catch((e) => {
       if (e.name === "CastError" || e.name === "ValidationError") {
-        // Invalid ID: return 400
         return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
       }
-      // Other errors: return 500
       return res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "Error liking item", e });
