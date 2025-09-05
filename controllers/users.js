@@ -4,6 +4,8 @@ const {
   BAD_REQUEST,
   NOT_FOUND,
   INTERNAL_SERVER_ERROR,
+  CONFLICT_ERROR_CODE,
+  UNAUTHORIZED_ERROR_CODE,
 } = require("../utils/errorCodes");
 
 const User = require("../models/user");
@@ -40,10 +42,22 @@ const createUser = (req, res) => {
       return res.status(CREATED_REQUEST).send(userObj);
     })
     .catch((err) => {
-      return res.status(BAD_REQUEST).send({ message: err.message });
+      if (err.code === 11000) {
+        // Duplicate key error (email already exists)
+        return res
+          .status(CONFLICT_ERROR_CODE)
+          .send({ message: "A user with this email already exists" });
+      }
+      if (err.name === "ValidationError") {
+        return res.status(BAD_REQUEST).send({ message: err.message });
+      }
+      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
 };
 
+// TODO: Fix existing users with status 409 error instead of 201
+
+// POST /signin
 const userAuth = (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -60,7 +74,9 @@ const userAuth = (req, res) => {
       return res.status(200).send({ token });
     })
     .catch(() => {
-      return res.status(401).send({ message: "Incorrect email or password" });
+      return res
+        .status(UNAUTHORIZED_ERROR_CODE)
+        .send({ message: "Incorrect email or password" });
     });
 };
 
@@ -90,4 +106,18 @@ const getUser = (req, res) => {
     });
 };
 
-module.exports = { getUsers, createUser, getUser, userAuth };
+// GET /users/me
+
+const getCurrentUser = (req, res) => {
+  User.findById(req.user._id)
+    .orFail()
+    .then((user) => res.status(OK_REQUEST).send(user))
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: "User not found" });
+      }
+      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+    });
+};
+
+module.exports = { getUsers, createUser, getUser, userAuth, getCurrentUser };
