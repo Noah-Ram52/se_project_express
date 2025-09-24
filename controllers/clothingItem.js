@@ -119,28 +119,33 @@ const likeItem = (req, res) => {
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
-  ClothingItem.findByIdAndDelete(itemId)
-    .orFail()
+  ClothingItem.findById(itemId)
     .then((item) => {
-      // Return 200 with the deleted item data as expected by the test
-      res.status(OK_REQUEST).send({ data: item });
+      if (!item) {
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
+      }
+
+      // Checking ownership
+      if (item.owner.toString() !== req.user._id) {
+        return res
+          .status(403)
+          .send({ message: "You cannot delete someone else's item" });
+      }
+
+      return ClothingItem.findByIdAndDelete(itemId).then(() =>
+        res.status(OK_REQUEST).send({ message: "Item deleted successfully" })
+      );
     })
     .catch((err) => {
       console.error("Error deleting item:", err);
 
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({
-          message: "Item not found",
-        });
-      }
       if (err.name === "CastError") {
-        return res.status(BAD_REQUEST).send({
-          message: "Invalid item ID",
-        });
+        return res.status(BAD_REQUEST).send({ message: "Item not found" });
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({
-        message: "An error has occurred on the server",
-      });
+
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -149,7 +154,7 @@ const deleteItem = (req, res) => {
 const dislikeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
-    { $pull: { likes: req.user } }, // remove _id from likes array
+    { $pull: { likes: req.user._id } }, // remove _id from likes array
     { new: true }
   )
     .then((item) => {
