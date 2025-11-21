@@ -2,7 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-const errorHandler = require("./middlewares/error-handlers");
+// Error Codes
+const internalServerError = require("./middlewares/error-handlers");
 
 const { PORT = 3001 } = process.env;
 const app = express();
@@ -21,7 +22,7 @@ app.use(express.json());
 
 app.use("/", mainRouter);
 
-app.use(errorHandler);
+app.use(internalServerError);
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
