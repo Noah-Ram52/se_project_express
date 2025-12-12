@@ -1,5 +1,5 @@
 class NotFoundError extends Error {
-  constructor(message = "Not Found") {
+  constructor(message) {
     super(message);
     this.statusCode = 404;
   }
