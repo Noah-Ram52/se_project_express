@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const { errors } = require("celebrate");
 
+const { requestLogger, errorLogger } = require("./middlewares/logger");
+
 // Error Codes
 const internalServerError = require("./middlewares/error-handlers");
 
@@ -21,11 +23,14 @@ mongoose
 app.use(cors());
 app.use(express.json());
 
-app.use("/", mainRouter);
+app.use(requestLogger); // Request logger goes first
+app.use("/", mainRouter); // routes (this is your "routes")
 
-app.use(errors());
+app.use(errorLogger); // enabling the error logger
 
-app.use(internalServerError);
+app.use(errors()); // celebrate error handler
+
+app.use(internalServerError); //centralized error handler
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
