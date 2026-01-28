@@ -2,6 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const { errors } = require("celebrate");
+// Maniuplat envvironment variables
+require("dotenv").config();
 
 const { requestLogger, errorLogger } = require("./middlewares/logger");
 
