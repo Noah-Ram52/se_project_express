@@ -9,18 +9,7 @@ const NotFoundError = require("../errors/not-found-error");
 const ConflictError = require("../errors/conflict-error");
 const UnauthorizedError = require("../errors/unauthorized-error");
 
-// GET /users
-
-// const getUsers = (req, res) => {
-//   User.find({})
-//     .then((users) => res.status(OK_REQUEST).send(users))
-//     .catch((err) => {
-//       console.error(err);
-//       return res.status(INTERNAL_SERVER_ERROR).send({
-//         message: "An error has occurred on the server",
-//       });
-//     });
-// };
+/* GET /users */
 
 const getUsers = (req, res, next) => {
   User.find({})

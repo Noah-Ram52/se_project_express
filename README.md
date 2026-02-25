@@ -13,3 +13,8 @@ The back-end project is focused on creating a server for the WTWR application. T
 Sever Domain Link: https://subdom-wtwr.jumpingcrab.com/
 
 Front-end Repository: https://github.com/Noah-Ram52/se_project_react
+
+## Project Pitch Video
+
+Check out [this video](https://drive.google.com/file/d/1X5ZDQZws_n-yas42p2HfdmjPkmYmu8B_/view?usp=sharing), where I describe my
+project and some challenges I faced while building it.
