@@ -35,7 +35,9 @@ app.use(errorLogger); // enabling the error logger
 
 app.use(errors()); // celebrate error handler
 
-app.use(internalServerError); //centralized error handler
+// centralized error handler
+
+app.use(internalServerError);
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console

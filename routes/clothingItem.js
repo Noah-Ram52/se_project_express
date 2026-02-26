@@ -10,25 +10,29 @@ const {
   dislikeItem,
 } = require("../controllers/clothingItem");
 
+const { validateId, validateCardBody } = require("../middlewares/validation");
+
 // CRUD routes for clothing items
 // CRUD = Create, Read, Update, Delete
 
 // CREATE
-router.post("/", auth, createItem);
+router.post("/", validateCardBody, createItem);
 
 // READ
 
 router.get("/", getItems);
 
+// Protecting the routes that require authentication
+router.use(auth);
+
 // UPDATE
 
-router.put("/:itemId", auth, updateItem); // Assuming updateItem can also handle updates
-router.put("/items/:id/likes", auth, likeItem);
-router.put("/:id/likes", auth, likeItem);
+router.put("/:id", updateItem); // Assuming updateItem can also handle updates
+router.put("/:id/likes", likeItem);
 
 // DELETE
 
-router.delete("/:itemId", auth, deleteItem); // Assuming deleteItem can handle deletion by itemId
-router.delete("/:itemId/likes", auth, dislikeItem);
+router.delete("/:id", validateId, deleteItem); // Assuming deleteItem can handle deletion by itemId
+router.delete("/:id/likes", validateId, dislikeItem);
 
 module.exports = router;

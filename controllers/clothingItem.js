@@ -53,11 +53,11 @@ const getItems = (req, res, next) => {
 // PUT request to update an item
 
 const updateItem = (req, res, next) => {
-  const { itemId } = req.params;
+  const { id } = req.params;
   const { imageUrl } = req.body;
 
   ClothingItem.findByIdAndUpdate(
-    itemId,
+    id,
     { $set: { imageUrl } },
     { new: true, runValidators: true }
   )
@@ -104,11 +104,12 @@ const likeItem = (req, res, next) => {
 };
 
 // DELETE request to delete an item
+// next is handling the errors
 
-const deleteItem = (req, res) => {
-  const { itemId } = req.params;
+const deleteItem = (req, res, next) => {
+  const { id } = req.params;
 
-  ClothingItem.findById(itemId)
+  ClothingItem.findById(id)
     .then((item) => {
       if (!item) {
         return next(new NotFoundError("Item not found"));
@@ -121,7 +122,7 @@ const deleteItem = (req, res) => {
         );
       }
 
-      return ClothingItem.findByIdAndDelete(itemId).then(() =>
+      return ClothingItem.findByIdAndDelete(id).then(() =>
         res.status(OK_REQUEST).send({ message: "Item deleted successfully" })
       );
     })
@@ -138,9 +139,9 @@ const deleteItem = (req, res) => {
 
 // Dislike an item: PUT request
 
-const dislikeItem = (req, res) => {
+const dislikeItem = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
-    req.params.itemId,
+    req.params.id,
     { $pull: { likes: req.user._id } }, // remove _id from likes array
     { new: true }
   )
