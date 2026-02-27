@@ -15,22 +15,16 @@ const { validateId, validateCardBody } = require("../middlewares/validation");
 // CRUD routes for clothing items
 // CRUD = Create, Read, Update, Delete
 
-// CREATE
-router.post("/", validateCardBody, createItem);
-
-// READ
-
 router.get("/", getItems);
 
 // Protecting the routes that require authentication
+// Apply authentication middleware to all routes below this line
 router.use(auth);
 
-// UPDATE
+router.post("/", validateCardBody, createItem);
 
-router.put("/:id", updateItem); // Assuming updateItem can also handle updates
-router.put("/:id/likes", likeItem);
-
-// DELETE
+router.put("/:id", updateItem);
+router.put("/:id/likes", validateId, likeItem);
 
 router.delete("/:id", validateId, deleteItem); // Assuming deleteItem can handle deletion by itemId
 router.delete("/:id/likes", validateId, dislikeItem);

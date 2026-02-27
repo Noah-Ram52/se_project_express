@@ -62,9 +62,6 @@ const createUser = (req, res, next) => {
 const userAuth = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    // return res
-    //   .status(BAD_REQUEST)
-    //   .send({ message: "Email and password required" });
     return next(new BadRequestError("Email and password required"));
   }
 
@@ -75,39 +72,13 @@ const userAuth = (req, res, next) => {
       });
       return res.status(200).send({ token });
     })
-    .catch(() =>
-      // res
-      //   .status(UNAUTHORIZED_ERROR_CODE)
-      //   .send({ message: "Incorrect email or password" })
-      next(new UnauthorizedError("Incorrect email or password"))
-    );
+    .catch((err) => {
+      if (err.message === "Incorrect email or password") {
+        return next(new UnauthorizedError("Incorrect email or password"));
+      }
+      return next(err); // 500 for other errors
+    });
 };
-
-// GET /users/:userId
-// const getUser = (req, res, next) => {
-//   const { userId } = req.params;
-//   User.findById(userId)
-//     .orFail()
-//     .then((user) => res.status(OK_REQUEST).send(user))
-//     .catch((err) => {
-//       console.error(err);
-//       if (err.name === "DocumentNotFoundError") {
-//         return res.status(NOT_FOUND).send({
-//           message: err.message,
-//         });
-//         // handle the case where the user is not found
-//       }
-//       if (err.name === "CastError") {
-//         // handle other errors
-//         return res.status(BAD_REQUEST).send({
-//           message: "User not found",
-//         });
-//       }
-//       return res.status(INTERNAL_SERVER_ERROR).send({
-//         message: "An error has occurred on the server",
-//       });
-//     });
-// };
 
 const getUser = (req, res, next) => {
   const { userId } = req.params;

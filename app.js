@@ -27,6 +27,12 @@ app.use(express.json());
 
 app.use(requestLogger); // Request logger goes first
 
+app.get("/crash-test", () => {
+  setTimeout(() => {
+    throw new Error("Server will crash now");
+  }, 0);
+});
+
 // The next line is /signup & /signup route handlers
 
 app.use("/", mainRouter); // routes (this is your "routes")

@@ -1,13 +1,11 @@
 const router = require("express").Router();
 const clothingItem = require("./clothingItem");
-const { NOT_FOUND } = require("../utils/errorCodes");
+const { NotFoundError } = require("../errors/not-found-error");
 const userRouter = require("./users");
 const { createUser, userAuth } = require("../controllers/users");
 const {
   validateUserBody,
   validateLogin,
-  validateId,
-  validateCardBody,
 } = require("../middlewares/validation");
 
 // Note: Ensure that the order of routes is correct to avoid conflicts
@@ -21,14 +19,14 @@ router.post("/signup", validateUserBody, createUser);
 router.post("/signin", validateLogin, userAuth);
 
 // Route /users to userRouter (protected routes)
-router.use("/users", validateId, userRouter);
+router.use("/users", userRouter);
 
 // Route /items to clothingItem router
-router.use("/items", validateCardBody, clothingItem);
+router.use("/items", clothingItem);
 
 // Catch-all for undefined routes
-router.use((req, res) => {
-  res.status(NOT_FOUND).send({ message: "Requested resource not found" });
+router.use((req, res, next) => {
+  return next(new NotFoundError("Requested resource not found"));
 });
 
 module.exports = router;
